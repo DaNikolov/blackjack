@@ -92,7 +92,8 @@ function stay() {
     else {
         while (dealerSum <= playerSum && dealerSum < 17) { 
             let dealerCard = getRandomCard("dealer");
-            if (dealerCard === 11 && (dealerSum += dealerCard) > 21){
+            let check = dealerCard + dealerSum
+            if (dealerCard === 11 && check  > 21){
                 dealerCard = 1;
             };
             addDealerCard(dealerCard);
@@ -165,6 +166,9 @@ function getRandomCard(person) {
             while (randomNumber !== 1 && randomNumber !== 11 ){
                 randomNumber = parseInt(prompt("Incorrect number please select 1 or 11 as value"));
             }
+        }
+        else {
+            randomNumber = 11; 
         }
         return randomNumber;
     }
