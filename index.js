@@ -1,16 +1,21 @@
 
 let playerSum = 0;
+let playerSplitSum = 0;
 let dealerSum = 0;
 let playerCards = [];
 let dealerCards = [];
+let playerSplitCards = []; 
 let playerMoney = 0; 
 let playerBet = 0; 
+let playerSplitBet = 0;
 let hasBlackJack = false;
 let isAlive = true;
 let message = "";
 let messageEl = document.getElementById("message-el");
 let playerSumEl = document.getElementById("player-sum-el");
+let playerSplitSumEl = document.getElementById("player-split-sum-el")
 let playerCardsEl = document.getElementById("player-cards-el");
+let playerSplitCardsEl = document.getElementById("player-split-cards-el");
 let dealerCardsEl = document.getElementById("dealer-cards-el");
 let dealerSumEl = document.getElementById("dealer-sum-el");
 let playerMoneyEl = document.getElementById("player-money-el"); 
@@ -52,7 +57,7 @@ function newCard() {
         alert("Please start a new game!")
     }
     else {
-    let playerAdditionalCard = 2 + Math.floor(Math.random() * 10);
+    let playerAdditionalCard = getRandomCard("player");
     playerCards.push(playerAdditionalCard); 
     playerSum += playerAdditionalCard;
     renderGame();
@@ -67,15 +72,12 @@ function startGame() {
         alert("you do not have enough money");
     }
     else {
-    let playerFirstCard = 2 + Math.floor(Math.random() * 10);
-    let playerSecondCard = 2 + Math.floor(Math.random() * 10);
-    let dealerCard = 2 + Math.floor(Math.random() * 10);
+    let playerFirstCard = getRandomCard("player");
+    let playerSecondCard = getRandomCard("player")
+    let dealerCard = getRandomCard("dealer")
     playerSum = playerFirstCard + playerSecondCard;
     playerCards = [playerFirstCard, playerSecondCard];
-    dealerCards = [dealerCard]; 
-    dealerCardsEl.textContent += " " + dealerCard;
-    dealerSum += dealerCard;
-    dealerSumEl.textContent = "Dealer Sum: " + dealerSum; 
+    addDealerCard(dealerCard);
     playerBetEl.textContent = "Your bet: " + playerBet;
     playerMoney -= playerBet; 
     playerMoneyEl.textContent = "Your money: " + playerMoney;
@@ -84,21 +86,29 @@ function startGame() {
 };
 
 function stay() {
-    while (dealerSum <= playerSum && dealerSum < 17) { 
-        let dealerCard = 2 + Math.floor(Math.random() * 10);
-        dealerSum += dealerCard;
-        dealerCards.push(dealerCard);
-        dealerSumEl.textContent = "Dealer Sum: " + dealerSum;
-        dealerCardsEl.textContent += " " + dealerCard;
-    }
-    if (dealerSum < playerSum || dealerSum > 21){
-        youWin();
+    if (dealerSum === 0) {
+        alert("Game has finished, please start a new game");
     }
     else {
-        message = "You lose"
+        while (dealerSum <= playerSum && dealerSum < 17) { 
+            let dealerCard = getRandomCard("dealer");
+            if (dealerCard === 11 && (dealerSum += dealerCard) > 21){
+                dealerCard = 1;
+            };
+            addDealerCard(dealerCard);
+        }
+        if (dealerSum < playerSum || dealerSum > 21){
+            youWin();
+        }
+        //else if (dealerSum > 21){
+        //    youWin();
+        //}
+        else {
+            message = "You lose"
+        }
+        messageEl.textContent = message;
+        startOver();
     }
-    messageEl.textContent = message;
-    startOver();
 };
 
 function startOver(){
@@ -110,7 +120,7 @@ function startOver(){
 }
 
 function double() {
-    if (playerCards.length > 2) {
+    if (playerCards.length !== 2) {
         alert("You cannot double when you have more than 2 cards")
     }
     else {
@@ -127,4 +137,45 @@ function youWin() {
     message = "You win!"
     playerMoney += 2 * playerBet
     playerMoneyEl.textContent = "Your money: " + playerMoney
+}
+
+function split() {
+    if(playerCards.length !== 2 || playerCards[0] !== playerCards[1]){
+        alert("You cannot split currently"); 
+    }
+    else{
+        let playerSplitCard = playerCards.pop()
+        playerSplitCardsEl.textContent = "Player Split Cards: " + playerSplitCard;
+        playerCardsEl.textContent = "Player Cards: " + playerSplitCard;
+        playerSplitCards.push(playerSplitCard);
+        playerSum /= 2;
+        playerSplitSum = playerSum;
+        playerSplitSumEl.textContent = "Player Split Sum: " + playerSum;
+        playerSumEl.textContent = "Player Sum: " + playerSum;
+    }
+}
+
+function getRandomCard(person) {
+    let randomNumber =  1 + Math.floor(Math.random() * 13);
+    if (randomNumber > 10) {
+        return 10
+    } else if(randomNumber === 1){ 
+        if (person === "player"){
+            randomNumber = parseInt(prompt("You have an ace do you wish to use it as 1 or 11?"));
+            while (randomNumber !== 1 && randomNumber !== 11 ){
+                randomNumber = parseInt(prompt("Incorrect number please select 1 or 11 as value"));
+            }
+        }
+        return randomNumber;
+    }
+    else{
+        return randomNumber;
+    }
+}
+
+function addDealerCard(dealerCard){
+    dealerSum += dealerCard;
+    dealerCards.push(dealerCard);
+    dealerSumEl.textContent = "Dealer Sum: " + dealerSum;
+    dealerCardsEl.textContent += " " + dealerCard;
 }
