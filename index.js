@@ -3,11 +3,11 @@ let playerGamesCompleted = 0;
 let dealerSum = 0;
 let players = [];
 let dealerCards = [];
-let hasBlackJack = false;
-let isAlive = true;
+let gameInProgress = false;
+let isLastPlayer = false;
 let message = "";
-let messageEl = document.getElementById("message-el");
-let documents = [
+const messageEl = document.getElementById("message-el");
+const documents = [
     {playerSumEl: document.getElementById("player1-sum-el"),
     playerBetEl:  document.getElementById("player1-bet-el"),
     playerCardsEl: document.getElementById("player1-cards-el"),
@@ -44,12 +44,12 @@ let documents = [
     playerSplitCardsEl: document.getElementById("player5-split-cards-el")
     }
 ]
-let dealerCardsEl = document.getElementById("dealer-cards-el");
-let dealerSumEl = document.getElementById("dealer-sum-el");
+const dealerCardsEl = document.getElementById("dealer-cards-el");
+const dealerSumEl = document.getElementById("dealer-sum-el");
 
 
 function addNewPlayer() {
-    if (numberOfPlayers >= 5) {
+    if (numberOfPlayers === 5) {
         alert("Maximum number of players has been reached")
     }
     else{
@@ -62,70 +62,74 @@ function addNewPlayer() {
         documents[numberOfPlayers].playerMoneyEl.textContent = `${playerName} has $${playerMoney} chips available`;
         numberOfPlayers ++;
     }
-    console.log(numberOfPlayers);
 };
 
 
 
 function renderGame(playerNumber) {
-    documents[playerNumber].playerCardsEl.textContent = `Player ${players[playerNumber].name}'s Cards: ${players[playerNumber].cards}`; 
+    displayCards(playerNumber)
     if (players[playerNumber].sum <= 20) {
         message = "Do you want to draw a new card?";
-        documents[playerNumber].playerSumEl.textContent = `Player ${players[playerNumber].name}'s cards have a sum of ${players[playerNumber].sum}`;
     } else if (players[playerNumber].sum === 21) {
-        hasBlackJack = true;
-        documents[playerNumber].playerSumEl.textContent = `Player ${players[playerNumber].name}'s cards have a sum of ${players[playerNumber].sum}`;
         youWin(playerNumber) 
         gamesCompletedCheck();
     }else {
         message = `I'm sorry, ${players[playerNumber].name}! You have lost`
-        isAlive = false
-        documents[playerNumber].playerSumEl.textContent = `Player ${players[playerNumber].name}'s cards have a sum of ${players[playerNumber].sum}`;
         gamesCompletedCheck();
     }
     messageEl.textContent = message;
+    console.log(message);
 };
 
 function newCard() {
-    if (players[playerGamesCompleted].cards.length === 0) {
+    if (!gameInProgress) {
         alert("Please start a new game!")
     }
+    else if(players[playerGamesCompleted].sum === 21){
+        renderGame(playerGamesCompleted);
+    }
     else {
-    let playerAdditionalCard = getRandomCard("player");
-    players[playerGamesCompleted].cards.push(playerAdditionalCard); 
-    players[playerGamesCompleted].sum += playerAdditionalCard;
-    renderGame(playerGamesCompleted);
+        let playerAdditionalCard = getRandomCard("player");
+        players[playerGamesCompleted].cards.push(playerAdditionalCard); 
+        players[playerGamesCompleted].sum += playerAdditionalCard;
+        renderGame(playerGamesCompleted);
     }
 };
 
 function startGame() {
-    for (i = 0; i < numberOfPlayers; i++){
-        playerBet = parseInt(prompt(`How much does player ${players[i].name} wish to bet?`))
-        players[i].bet = playerBet;
-        if(playerBet > players[i].chips || !Number.isInteger(playerBet)){
-            alert("you do not have enough money");
+    if (numberOfPlayers === 0){
+        alert("Please add players to the game")
+    }
+    else if (gameInProgress){
+        alert("Game has not been completed. Please complete current game before starting again.")
+    }
+    else{
+        for (let i = 0; i < numberOfPlayers; i++){
+            let playerBet = parseInt(prompt(`How much does player ${players[i].name} wish to bet?`))
+            while(playerBet > players[i].chips || !Number.isInteger(playerBet)){
+                playerBet = parseInt(prompt(`${players[i].name} you have $${players[i].chips} available. Please bet maximum this amount`))          
+            }
+            players[i].bet = playerBet
+            let playerFirstCard = getRandomCard("player");
+            let playerSecondCard = getRandomCard("player")
+            players[i].cards = [playerFirstCard, playerSecondCard];
+            players[i].sum = playerFirstCard + playerSecondCard;
+            players[i].chips -= playerBet; 
+            placingBet(i);
+            displayCards(i);
         }
-        else {
-        let playerFirstCard = getRandomCard("player");
-        let playerSecondCard = getRandomCard("player")
-        players[i].cards = [playerFirstCard, playerSecondCard];
-        players[i].sum = playerFirstCard + playerSecondCard;
-        documents[i].playerBetEl.textContent = `${players[i].name} has placed a bet worth $${playerBet}`;
-        players[i].chips -= playerBet; 
-        documents[i].playerMoneyEl.textContent = `${players[i].name} has $${players[i].chips} chips available`
-        renderGame(i)
+        let dealerCard = getRandomCard("dealer")
+        addDealerCard(dealerCard);
+        dealerCardsEl.textContent = "Dealer Cards: " + dealerCard;
     }
-    }
-    let dealerCard = getRandomCard("dealer")
-    addDealerCard(dealerCard);
-    dealerCardsEl.textContent = "Dealer Cards: " + dealerCard;
+    gameInProgress = true;
 };
 
 function stay() {
-    if (dealerSum === 0) {
+    if (!gameInProgress) {
         alert("Game has finished, please start a new game");
     };
-    if (numberOfPlayers === playerGamesCompleted + 1){
+    if (numberOfPlayers === playerGamesCompleted + 1 || isLastPlayer){
         while (dealerSum <= findMaxPlayerSum() && dealerSum < 17) { 
             let dealerCard = getRandomCard("dealer");
             let check = dealerCard + dealerSum
@@ -134,55 +138,72 @@ function stay() {
             };
             addDealerCard(dealerCard);
         }
-        for (i = 0; i < numberOfPlayers; i++){
-            if (dealerSum < players[i].sum || dealerSum > 21){
+        for (let i = 0; i < numberOfPlayers; i++){
+            if ((dealerSum < players[i].sum && players[i].sum < 21 ) || (dealerSum > 21 && players[i].sum < 21)){
                 youWin(i);
             }
             else {
-                message = `${players[i].name} has lost`
+                message = `${players[i].name} has lost. `
             }
         }
         messageEl.textContent = message;
-        console.log(findMaxPlayerSum());
         startOver();
     }
     else{
-        playerGamesCompleted ++;
-        alert (`Player ${players[playerGamesCompleted].name} is next`)
-        console.log(playerGamesCompleted);
+        gamesCompletedCheck();
     }
 };
 
 function startOver(){
-    players = []; 
+     
     dealerSum = 0;
     dealerCards = []; 
-    for (i = 0; i < numberOfPlayers; i++){
-        documents[i].playerSumEl.textContent = "";
+    for (let i = 0; i < numberOfPlayers; i++){
+        //documents[i].playerSumEl.textContent = "";
         documents[i].playerBetEl.textContent = "";
-        documents[i].playerCardsEl.textContent = "";
+        //documents[i].playerCardsEl.textContent = "";
         documents[i].playerSplitSumEl.textContent = "";
         documents[i].playerSplitCardsEl.textContent = "";
+        players[i].bet = 0;
+        players[i].cards = [];
+        players[i].sum = 0; 
     }
     alert("Game is complete!");
+    playerGamesCompleted = 0;
+    gameInProgress = false; 
+    isLastPlayer = false;
 }
 
 function double() {
-    if (playerCards.length !== 2) {
+    const currentPlayer = playerGamesCompleted
+    console.log(currentPlayer)
+    if (players[playerGamesCompleted].cards.length !== 2) {
         alert("You cannot double when you have more than 2 cards")
     }
+    else if (!gameInProgress) {
+        alert("Please start a new game")
+    } 
+    else if (numberOfPlayers === currentPlayer + 1){
+        isLastPlayer = true
+        players[playerGamesCompleted].chips -= players[playerGamesCompleted].bet; 
+        players[playerGamesCompleted].bet *= 2; 
+        placingBet(playerGamesCompleted)
+        newCard();
+        stay()
+    }
     else {
-    playerMoney -= playerBet;
-    playerBet *= 2; 
-    playerMoneyEl.textContent = "Your money: " + playerMoney
-    playerBetEl.textContent = "Your bet: " + playerBet
-    newCard();
-    stay();
+        players[playerGamesCompleted].chips -= players[playerGamesCompleted].bet; 
+        players[playerGamesCompleted].bet *= 2; 
+        placingBet(playerGamesCompleted)
+        newCard();
+        if (currentPlayer === playerGamesCompleted){
+            stay();
+        }
     };
 }
 
 function youWin(player) {
-    message = `You win, ${players[player].name}!`
+    message = `You win, ${players[player].name}! `
     players[player].chips += 2 * players[player].bet
     documents[player].playerMoneyEl.textContent = `${players[player].name} has $${players[player].chips} chips available`
 }
@@ -233,22 +254,29 @@ function addDealerCard(dealerCard){
 
 function gamesCompletedCheck() {
     if(playerGamesCompleted + 1 === numberOfPlayers) {
-        startOver();
+        stay();
     }
     else {
         playerGamesCompleted ++;
         alert (`Player ${players[playerGamesCompleted].name} is next`)
-        console.log(playerGamesCompleted);
     }
 }
 
 function findMaxPlayerSum() {
     let max = players[0].sum
-    for (i = 0; i < numberOfPlayers; i++) {
-        if ( max < players[i].sum) {
+    for (let i = 0; i < numberOfPlayers; i++) {
+        if ( max < players[i].sum && players[i].sum < 22) {
             max = players[i].sum;
         }
     }
     return max
 } 
 
+function placingBet(player) {
+    documents[player].playerBetEl.textContent = `${players[player].name} has placed a bet worth $${players[player].bet}`;
+    documents[player].playerMoneyEl.textContent = `${players[player].name} has $${players[player].chips} chips available`
+}
+function displayCards(playerNumber) {
+    documents[playerNumber].playerCardsEl.textContent = `Player ${players[playerNumber].name}'s Cards: ${players[playerNumber].cards}`; 
+    documents[playerNumber].playerSumEl.textContent = `Player ${players[playerNumber].name}'s cards have a sum of ${players[playerNumber].sum}`;
+}
