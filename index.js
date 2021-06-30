@@ -75,9 +75,29 @@ function addNewPlayer() {
 
         players.push({
             name: playerName,
-            chips: playerMoney
+            chips: playerMoney,
+            isAlive: true,
+            sum: 0,
+            cards: [],
+            playerCardSum: function() {
+                this.sum = 0;
+                for(const card of this.cards) {
+                    this.sum += card;
+                }
+                if(this.sum === 21){
+                    this.isAlive = false
+                }
+                documents[players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
+                documents[players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: ${this.cards}`
+            },
+            displayPlayerBet: function(){
+                documents[players.indexOf(this)].playerBetEl.textContent = `${this.name} has placed a bet worth $${this.bet}`;
+                },
+            displayPlayerChips: function(){
+                documents[players.indexOf(this)].playerMoneyEl.textContent = `${this.name} has $${this.chips} chips available`
+            }
         })
-        documents[numberOfPlayers].playerMoneyEl.textContent = `${playerName} has $${playerMoney} chips available`;
+        players[numberOfPlayers].displayPlayerChips();
         numberOfPlayers ++;
     }
 };
@@ -99,13 +119,13 @@ function startGame() {
             element.chips -= element.bet
             element.cards = [getRandomCard(), getRandomCard()]
             determineAces(element.cards)
-            sumGenerator(element)
-            renderGame(players.indexOf(element));
-            placingBet(players.indexOf(element));
+            element.playerCardSum()
+            element.displayPlayerBet()
+            element.displayPlayerChips()
         }
         dealer.cards.push(getRandomCard());
         dealer.dealerCardSum();
-        person = determineCurrentPlayer()
+        let person = determineCurrentPlayer()
         alert(`Player ${person.name} is next`);
         gameInProgress = true;
     }  
@@ -120,7 +140,7 @@ function newCard() {
             if (player.isAlive) {
                 player.cards.push(getRandomCard());
                 determineAces(player.cards)
-                sumGenerator(player);
+                player.playerCardSum()
                 renderGame(players.indexOf(player));
                 break;
             }
@@ -129,14 +149,16 @@ function newCard() {
 };
 
 function renderGame(playerNumber) {
-    documents[playerNumber].playerCardsEl.textContent = `Player ${players[playerNumber].name}'s Cards: ${players[playerNumber].cards}`
-    documents[playerNumber].playerSumEl.textContent = `Player ${players[playerNumber].name}'s cards have a sum of ${players[playerNumber].sum}`
+    gameInProgress = true
     if (players[playerNumber].sum <= 20) {
         message = `Player ${players[playerNumber].name} select a new card or stay`
-    } else{
-         stay()
+    } 
+    else{
+        stay()
     }
 }
+
+
 
 
 
@@ -147,7 +169,7 @@ function stay() {
     else{ 
         const check = players.filter(player => player.isAlive)
         if (check.length > 1){
-            players[players.indexOf(determineCurrentPlayer())].isAlive = false
+            determineCurrentPlayer().isAlive = false
             alert(`Player ${determineCurrentPlayer().name} is next`);
         }
         else {
@@ -182,7 +204,8 @@ function double() {
     else {
         player.chips -= player.bet; 
         player.bet *= 2; 
-        placingBet(players.indexOf(player))
+        player.displayPlayerChips()
+        player.displayPlayerBet()
         newCard();
         stay()
     }
@@ -200,10 +223,6 @@ function findMaxPlayerSum() {
     return max
 } 
 
-function placingBet(player) {
-    documents[player].playerBetEl.textContent = `${players[player].name} has placed a bet worth $${players[player].bet}`;
-    documents[player].playerMoneyEl.textContent = `${players[player].name} has $${players[player].chips} chips available`
-}
 
 
 function startOver(){
@@ -228,7 +247,7 @@ function startOver(){
 function youWin(player) {
     alert(`You win, ${players[player].name}!`)
     players[player].chips += 2 * players[player].bet
-    documents[player].playerMoneyEl.textContent = `${players[player].name} has $${players[player].chips} chips available`
+    players[player].displayPlayerChips()
     players[player].isAlive = false;
 }
 
@@ -249,14 +268,6 @@ function split() {
 }
 
 
-function sumGenerator(element) {
-    let sum = 0;
-    for (const card of element.cards){
-        sum += card
-    }
-    element.sum = sum
-}
-
 
 function determineCurrentPlayer() {
     for (const player of players) {
@@ -269,13 +280,13 @@ function determineCurrentPlayer() {
 
 function determineAces(arr){
     let sum = 0
-    for(const card of arr){
+    for(let card of arr){
         sum += card
     }
     if(arr.some(check => check === 11) && sum > 22){
-        for(const card of arr){
+        for(let card of arr){
             if(card === 11){
-                card = 1
+                arr[arr.indexOf(card)] = 1
                 break;
             }
         }
@@ -301,7 +312,7 @@ function determineWinners() {
         else if(dealer.sum === player.sum && player.sum !== 21){
             alert(`${player.name} has drawn.`)
             player.chips += player.bet
-            documents[players.indexOf(player)].playerMoneyEl.textContent = `${player.name} has $${player.chips} chips available`
+            player.displayPlayerChips()
             player.isAlive = false
         }
         else {
