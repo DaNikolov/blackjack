@@ -46,6 +46,7 @@ const dealer = {
     cardsEl: document.getElementById("dealer-cards-el"),
     sumEl: document.getElementById("dealer-sum-el"),
     dealerCardSum: function() {
+        this.sum = 0;
         for(const card of this.cards) {
             this.sum += card;
             this.sumEl.textContent = "Dealer Sum: " + this.sum
@@ -123,16 +124,8 @@ function renderGame(playerNumber) {
     documents[playerNumber].playerSumEl.textContent = `Player ${players[playerNumber].name}'s cards have a sum of ${players[playerNumber].sum}`
     if (players[playerNumber].sum <= 20) {
         message = `Player ${players[playerNumber].name} select a new card or stay`
-    } else if (players[playerNumber].sum === 21) {
-        youWin(playerNumber) 
-    }else {
-        alert(`I'm sorry, ${players[playerNumber].name}! You have lost`)
-        players[playerNumber].isAlive = false
-    }
-    if(!determineCurrentPlayer()){
-        completeDealerCards()
-        determineWinners
-        startOver()
+    } else{
+         stay()
     }
 }
 
@@ -205,20 +198,17 @@ function placingBet(player) {
 
 
 function startOver(){
-     
-    
-    dealer.sum = 0
     dealer.dealerCardSum()
     dealer.cards = [] 
-    for (let i = 0; i < numberOfPlayers; i++){
+    for (let player in players){
         //documents[i].playerSumEl.textContent = "";
-        documents[i].playerBetEl.textContent = "";
+        documents[player].playerBetEl.textContent = "";
         //documents[i].playerCardsEl.textContent = "";
-        documents[i].playerSplitSumEl.textContent = "";
-        documents[i].playerSplitCardsEl.textContent = "";
-        players[i].bet = 0;
-        players[i].cards = [];
-        players[i].sum = 0; 
+        documents[player].playerSplitSumEl.textContent = "";
+        documents[player].playerSplitCardsEl.textContent = "";
+        players[player].bet = 0;
+        players[player].cards = [];
+        players[player].sum = 0; 
     }
     alert("Game is complete!");
     gameInProgress = false; 
@@ -256,7 +246,6 @@ function sumGenerator(element) {
         sum += card
     }
     element.sum = sum
-    element.isAlive = true 
 }
 
 
@@ -288,7 +277,6 @@ function completeDealerCards() {
     while (dealer.sum < 17) { 
         dealer.cards.push(getRandomCard())
         determineAces(dealer.cards)
-        dealer.sum = 0
         dealer.dealerCardSum()
     }
 } 
@@ -298,7 +286,10 @@ function determineWinners() {
         if ((dealer.sum < player.sum && player.sum < 21 ) || (dealer.sum > 21 && player.sum < 21)){
             youWin(players.indexOf(player));
         }
-        else if(dealer.sum === player.sum){
+        else if (player.sum === 21){
+            youWin(players.indexOf(player));
+        }
+        else if(dealer.sum === player.sum && player.sum !== 21){
             alert(`${player.name} has drawn.`)
             player.chips += player.bet
             documents[players.indexOf(player)].playerMoneyEl.textContent = `${player.name} has $${player.chips} chips available`
