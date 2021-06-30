@@ -1,3 +1,4 @@
+'use strict'
 let numberOfPlayers = 0;
 let players = [];
 let gameInProgress = false;
@@ -61,8 +62,17 @@ function addNewPlayer() {
         alert("Maximum number of players has been reached")
     }
     else{
-        playerName = prompt("What is your name?")
-        playerMoney = parseInt(prompt("How much do you wish to deposit"));
+        let playerName = prompt("What is your name?")
+        while (playerName === ""){
+            alert("Name cannot be empty. Please try again.")
+            playerName = prompt("What is your name?")
+        }
+        let playerMoney = parseInt(prompt("How much do you wish to deposit"));
+        while(!Number.isInteger(playerMoney)){
+            alert("You must deposit a number. Please try again.")
+            playerMoney = parseInt(prompt("How much do you wish to deposit"));
+        }
+
         players.push({
             name: playerName,
             chips: playerMoney
@@ -80,13 +90,12 @@ function startGame() {
         alert("Game has not been completed. Please complete current game before starting again.")
     }
     else{
-        for (let element of players) {
-            let playerBet = parseInt(prompt(`How much does player ${element.name} wish to bet?`))
-            while(playerBet > element.chips || !Number.isInteger(playerBet)){
-                playerBet = parseInt(prompt(`${element.name} you have $${element.chips} available. Please bet maximum this amount`))          
+        for (const element of players) {
+            element.bet = parseInt(prompt(`How much does player ${element.name} wish to bet?`))
+            while(element.bet > element.chips || !Number.isInteger(element.bet)){
+                element.bet = parseInt(prompt(`${element.name} you have $${element.chips} available. Please bet maximum this amount`))          
             }
             element.isAlive = true
-            element.bet = playerBet
             element.chips -= element.bet
             element.cards = [getRandomCard(), getRandomCard()]
             determineAces(element.cards)
@@ -107,7 +116,7 @@ function newCard() {
         alert("Please start a new game!")
     }
     else { 
-        for (let player of players) {
+        for (const player of players) {
             if (player.isAlive) {
                 player.cards.push(getRandomCard());
                 determineAces(player.cards)
@@ -150,7 +159,7 @@ function stay() {
 };
 
 function getRandomCard() {
-    let randomNumber =  1 + Math.floor(Math.random() * 13);
+    const randomNumber =  1 + Math.floor(Math.random() * 13);
     if (randomNumber > 10) {
         return 10
     } else if(randomNumber === 1){ 
@@ -163,7 +172,7 @@ function getRandomCard() {
 
 
 function double() {
-    let player = determineCurrentPlayer()
+    const player = determineCurrentPlayer()
     if (player.cards.length !== 2) {
         alert("You cannot double when you have more than 2 cards")
     }
@@ -181,7 +190,7 @@ function double() {
 
 
 function findMaxPlayerSum() {
-    let filteredPlayers = players.filter(check => check.sum < 22)
+    const filteredPlayers = players.filter(check => check.sum < 22)
     let max = filteredPlayers[0].sum
     for (let player of filteredPlayers) {
         if ( max < player.sum) {
@@ -200,7 +209,7 @@ function placingBet(player) {
 function startOver(){
     dealer.dealerCardSum()
     dealer.cards = [] 
-    for (let player in players){
+    for (const player in players){
         //documents[i].playerSumEl.textContent = "";
         documents[player].playerBetEl.textContent = "";
         //documents[i].playerCardsEl.textContent = "";
@@ -242,7 +251,7 @@ function split() {
 
 function sumGenerator(element) {
     let sum = 0;
-    for (let card of element.cards){
+    for (const card of element.cards){
         sum += card
     }
     element.sum = sum
@@ -250,7 +259,7 @@ function sumGenerator(element) {
 
 
 function determineCurrentPlayer() {
-    for (let player of players) {
+    for (const player of players) {
         if (player.isAlive) {
             return player
             break;
@@ -260,11 +269,11 @@ function determineCurrentPlayer() {
 
 function determineAces(arr){
     let sum = 0
-    for(card of arr){
+    for(const card of arr){
         sum += card
     }
     if(arr.some(check => check === 11) && sum > 22){
-        for(card of arr){
+        for(const card of arr){
             if(card === 11){
                 card = 1
                 break;
