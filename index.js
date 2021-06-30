@@ -170,31 +170,20 @@ function getRandomCard() {
 
 
 function double() {
-    const currentPlayer = playerGamesCompleted
-    console.log(currentPlayer)
-    if (players[playerGamesCompleted].cards.length !== 2) {
+    let player = determineCurrentPlayer()
+    if (player.cards.length !== 2) {
         alert("You cannot double when you have more than 2 cards")
     }
     else if (!gameInProgress) {
         alert("Please start a new game")
     } 
-    else if (numberOfPlayers === currentPlayer + 1){
-        isLastPlayer = true
-        players[playerGamesCompleted].chips -= players[playerGamesCompleted].bet; 
-        players[playerGamesCompleted].bet *= 2; 
-        placingBet(playerGamesCompleted)
+    else {
+        player.chips -= player.bet; 
+        player.bet *= 2; 
+        placingBet(players.indexOf(player))
         newCard();
         stay()
     }
-    else {
-        players[playerGamesCompleted].chips -= players[playerGamesCompleted].bet; 
-        players[playerGamesCompleted].bet *= 2; 
-        placingBet(playerGamesCompleted)
-        newCard();
-        if (currentPlayer === playerGamesCompleted){
-            stay();
-        }
-    };
 }
 
 
