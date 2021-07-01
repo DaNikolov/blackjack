@@ -48,13 +48,36 @@ const dealer = {
     sumEl: document.getElementById("dealer-sum-el"),
     dealerCardSum: function() {
         this.sum = 0;
+        this.cardsEl.textContent = "Dealer Cards: "
         for(const card of this.cards) {
-            this.sum += card;
+            this.sum += card.value;
             this.sumEl.textContent = "Dealer Sum: " + this.sum
+            this.cardsEl.textContent += `(${card.name})`
         }
-        this.cardsEl.textContent = "Dealer Cards: " + [...this.cards]
     }
 }
+const addPlayerBtn = document.getElementById("add-player-btn")
+const startGameBtn = document.getElementById("start-game-btn")
+const newCardBtn = document.getElementById("new-card-btn")
+const doubleBtn = document.getElementById("double-btn")
+const stayBtn = document.getElementById("stay-btn")
+import{getRandomCard, insertCards} from "./cards.js"
+
+addPlayerBtn.addEventListener("click", function() {
+    addNewPlayer()
+})
+startGameBtn.addEventListener("click", function(){
+    startGame()
+})
+newCardBtn.addEventListener("click", function(){
+    newCard()
+})
+doubleBtn.addEventListener("click", function() {
+    double()
+})
+stayBtn.addEventListener("click", function(){
+    stay()
+})
 
 
 function addNewPlayer() {
@@ -63,7 +86,7 @@ function addNewPlayer() {
     }
     else{
         let playerName = prompt("What is your name?")
-        while (playerName === ""){
+        while (!playerName){
             alert("Name cannot be empty. Please try again.")
             playerName = prompt("What is your name?")
         }
@@ -81,14 +104,16 @@ function addNewPlayer() {
             cards: [],
             playerCardSum: function() {
                 this.sum = 0;
+                documents[players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: `
                 for(const card of this.cards) {
-                    this.sum += card;
+                    this.sum += card.value;
+                    documents[players.indexOf(this)].playerCardsEl.textContent += `(${card.name})` 
                 }
                 if(this.sum === 21){
                     this.isAlive = false
+                    alert(`Player ${this.name} has blackjack and has completed the game`)
                 }
                 documents[players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
-                documents[players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: ${this.cards}`
             },
             displayPlayerBet: function(){
                 documents[players.indexOf(this)].playerBetEl.textContent = `${this.name} has placed a bet worth $${this.bet}`;
@@ -118,6 +143,7 @@ function startGame() {
             element.isAlive = true
             element.chips -= element.bet
             element.cards = [getRandomCard(), getRandomCard()]
+            console.log(element.cards[0])
             determineAces(element.cards)
             element.playerCardSum()
             element.displayPlayerBet()
@@ -150,7 +176,8 @@ function newCard() {
 
 function renderGame(playerNumber) {
     gameInProgress = true
-    if (players[playerNumber].sum <= 20) {
+    players[playerNumber].isAlive = true
+    if (players[playerNumber].sum < 21) {
         message = `Player ${players[playerNumber].name} select a new card or stay`
     } 
     else{
@@ -180,17 +207,17 @@ function stay() {
     }
 };
 
-function getRandomCard() {
-    const randomNumber =  1 + Math.floor(Math.random() * 13);
-    if (randomNumber > 10) {
-        return 10
-    } else if(randomNumber === 1){ 
-        return 11
-    }
-    else{
-        return randomNumber;
-    }
-}
+// function getRandomCard() {
+//     const randomNumber =  1 + Math.floor(Math.random() * 13);
+//     if (randomNumber > 10) {
+//         return 10
+//     } else if(randomNumber === 1){ 
+//         return 11
+//     }
+//     else{
+//         return randomNumber;
+//     }
+// }
 
 
 function double() {
@@ -229,9 +256,10 @@ function startOver(){
     dealer.dealerCardSum()
     dealer.cards = [] 
     for (const player in players){
-        //documents[i].playerSumEl.textContent = "";
+        for (const card in player.cards){
+            insertCards(card)
+        }
         documents[player].playerBetEl.textContent = "";
-        //documents[i].playerCardsEl.textContent = "";
         documents[player].playerSplitSumEl.textContent = "";
         documents[player].playerSplitCardsEl.textContent = "";
         players[player].bet = 0;
@@ -251,20 +279,9 @@ function youWin(player) {
     players[player].isAlive = false;
 }
 
-function split() {
-    if(playerCards.length !== 2 || playerCards[0] !== playerCards[1]){
-        alert("You cannot split currently"); 
-    }
-    else{
-        let playerSplitCard = playerCards.pop()
-        playerSplitCardsEl.textContent = "Player Split Cards: " + playerSplitCard;
-        playerCardsEl.textContent = "Player Cards: " + playerSplitCard;
-        playerSplitCards.push(playerSplitCard);
-        playerSum /= 2;
-        playerSplitSum = playerSum;
-        playerSplitSumEl.textContent = "Player Split Sum: " + playerSum;
-        playerSumEl.textContent = "Player Sum: " + playerSum;
-    }
+function split(btn) {
+    console.log(btn.toString())
+    btn.style.background = "Red"
 }
 
 
@@ -281,12 +298,12 @@ function determineCurrentPlayer() {
 function determineAces(arr){
     let sum = 0
     for(let card of arr){
-        sum += card
+        sum += card.value
     }
     if(arr.some(check => check === 11) && sum > 22){
         for(let card of arr){
             if(card === 11){
-                arr[arr.indexOf(card)] = 1
+                arr[arr.indexOf(card)].value = 1
                 break;
             }
         }
