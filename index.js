@@ -61,7 +61,7 @@ const startGameBtn = document.getElementById("start-game-btn")
 const newCardBtn = document.getElementById("new-card-btn")
 const doubleBtn = document.getElementById("double-btn")
 const stayBtn = document.getElementById("stay-btn")
-import{getRandomCard, insertCards} from "./cards.js"
+import{getRandomCard, insertCards, deck} from "./cards.js"
 
 addPlayerBtn.addEventListener("click", function() {
     addNewPlayer()
@@ -143,7 +143,6 @@ function startGame() {
             element.isAlive = true
             element.chips -= element.bet
             element.cards = [getRandomCard(), getRandomCard()]
-            console.log(element.cards[0])
             determineAces(element.cards)
             element.playerCardSum()
             element.displayPlayerBet()
@@ -174,16 +173,7 @@ function newCard() {
     }
 };
 
-function renderGame(playerNumber) {
-    gameInProgress = true
-    players[playerNumber].isAlive = true
-    if (players[playerNumber].sum < 21) {
-        message = `Player ${players[playerNumber].name} select a new card or stay`
-    } 
-    else{
-        stay()
-    }
-}
+
 
 
 
@@ -238,25 +228,33 @@ function double() {
     }
 }
 
+function split(btn) {
+    console.log(btn.toString())
+    btn.style.background = "Red"
+}
 
-function findMaxPlayerSum() {
-    const filteredPlayers = players.filter(check => check.sum < 22)
-    let max = filteredPlayers[0].sum
-    for (let player of filteredPlayers) {
-        if ( max < player.sum) {
-            max = player.sum;
-        }
-    }
-    return max
-} 
+// function findMaxPlayerSum() {
+//     const filteredPlayers = players.filter(check => check.sum < 22)
+//     let max = filteredPlayers[0].sum
+//     for (let player of filteredPlayers) {
+//         if ( max < player.sum) {
+//             max = player.sum;
+//         }
+//     }
+//     return max
+// } 
 
 
 
 function startOver(){
+    for(const card of dealer.cards){
+        insertCards(card)
+    }
     dealer.dealerCardSum()
     dealer.cards = [] 
     for (const player in players){
-        for (const card in player.cards){
+        for (const card of players[player].cards){
+            console.log(card)
             insertCards(card)
         }
         documents[player].playerBetEl.textContent = "";
@@ -279,10 +277,7 @@ function youWin(player) {
     players[player].isAlive = false;
 }
 
-function split(btn) {
-    console.log(btn.toString())
-    btn.style.background = "Red"
-}
+
 
 
 
@@ -300,12 +295,13 @@ function determineAces(arr){
     for(let card of arr){
         sum += card.value
     }
-    if(arr.some(check => check === 11) && sum > 22){
+    if(arr.some(check => check.value === 11) && sum > 22){
         for(let card of arr){
-            if(card === 11){
-                arr[arr.indexOf(card)].value = 1
+            if(card.value === 11){
+                console.log(card.value)
+                card.value = 1
                 break;
-            }
+            }console.log(card);
         }
     }
 }
@@ -326,7 +322,7 @@ function determineWinners() {
         else if (player.sum === 21){
             youWin(players.indexOf(player));
         }
-        else if(dealer.sum === player.sum && player.sum !== 21){
+        else if(dealer.sum === player.sum && player.sum < 21){
             alert(`${player.name} has drawn.`)
             player.chips += player.bet
             player.displayPlayerChips()
@@ -336,5 +332,16 @@ function determineWinners() {
             alert(`${player.name} has lost.`)
             player.isAlive = false
         }
+    }
+}
+
+function renderGame(playerNumber) {
+    gameInProgress = true
+    players[playerNumber].isAlive = true
+    if (players[playerNumber].sum < 21) {
+        message = `Player ${players[playerNumber].name} select a new card or stay`
+    } 
+    else{
+        stay()
     }
 }

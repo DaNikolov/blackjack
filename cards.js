@@ -1,4 +1,4 @@
-const deck = [
+export const deck = [
     {
         name: "Ace of Spades",
         value: 11
@@ -153,7 +153,7 @@ const deck = [
     },
     {
         name: "Ten of Hearts",
-        value: 10,
+        value: 10
     },
     {
         name: "Ten of Clubs",
@@ -209,13 +209,18 @@ const deck = [
     }
 ]
 
+let cardCount = 52
+
 export function getRandomCard() {
-    let index = Math.floor(Math.random()*52)
+    let index = Math.floor(Math.random()*cardCount)
     let card = deck.splice(index, 1)
+    cardCount --
     return card[0]
 }
 
 export function insertCards(card) {
     deck.push(card)
+    console.log(deck)
+    cardCount = 52
 };
 
