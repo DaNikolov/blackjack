@@ -220,7 +220,6 @@ export function getRandomCard() {
 
 export function insertCards(card) {
     deck.push(card)
-    console.log(deck)
     cardCount = 52
-};
+}
 
