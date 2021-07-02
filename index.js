@@ -2,13 +2,15 @@
 let numberOfPlayers = 0;
 let gameInProgress = false;
 let message = ""
+import { getRandomCard } from "./cards.js"
+import * as imports from './utils.js'
+
 const addPlayerBtn = document.getElementById("add-player-btn")
 const startGameBtn = document.getElementById("start-game-btn")
 const newCardBtn = document.getElementById("new-card-btn")
 const doubleBtn = document.getElementById("double-btn")
 const stayBtn = document.getElementById("stay-btn")
-import { getRandomCard } from "./cards.js"
-import * as imports from './utils.js'
+
 
 addPlayerBtn.addEventListener("click", function () {
     addNewPlayer()
@@ -48,7 +50,6 @@ function addNewPlayer() {
             chips: playerMoney,
             isAlive: true,
             sum: 0,
-            cards: [],
             playerCardSum: function () {
                 this.sum = 0;
                 imports.documents[imports.players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: `
@@ -56,6 +57,7 @@ function addNewPlayer() {
                     this.sum += card.value;
                     imports.documents[imports.players.indexOf(this)].playerCardsEl.textContent += `(${card.name})`
                 }
+                imports.documents[imports.players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
                 if (this.sum === 21) {
                     this.isAlive = false
                     alert(`Player ${this.name} has blackjack and has completed the game`)
@@ -66,7 +68,6 @@ function addNewPlayer() {
                     alert(`Player ${this.name} has exceeded 21 and has completed the game`)
                     stay()
                 }
-                imports.documents[imports.players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
             },
             displayPlayerBet: function () {
                 imports.documents[imports.players.indexOf(this)].playerBetEl.textContent = `${this.name} has placed a bet worth $${this.bet}`;
@@ -88,12 +89,12 @@ function startGame() {
         alert("Game has not been completed. Please complete current game before starting again.")
     }
     else {
+        gameInProgress = true;
         for (const element of imports.players) {
             element.bet = parseInt(prompt(`How much does player ${element.name} wish to bet?`))
             while (element.bet > element.chips || !Number.isInteger(element.bet)) {
                 element.bet = parseInt(prompt(`${element.name} you have $${element.chips} available. Please bet maximum this amount`))
             }
-            element.isAlive = true
             element.chips -= element.bet
             element.cards = [getRandomCard(), getRandomCard()]
             imports.determineAces(element.cards)
@@ -105,7 +106,6 @@ function startGame() {
         imports.dealer.dealerCardSum();
         let person = imports.determineCurrentPlayer()
         alert(`Player ${person.name} is next`);
-        gameInProgress = true;
     }
 };
 
