@@ -1,9 +1,8 @@
 'use strict'
 let numberOfPlayers = 0;
 let gameInProgress = false;
-import { getRandomCard } from "./cards.js"
+import { getRandomCard, cardsDeck } from "./cards.js"
 import * as utilFunctions from './utils.js'
-import { cardsDeck } from "./cards1.js";
 
 const addPlayerBtn = document.getElementById("add-player-btn")
 const startGameBtn = document.getElementById("start-game-btn")
@@ -30,7 +29,7 @@ class Player {
     playerCardSum() {
         utilFunctions.documents[utilFunctions.players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: `
         for (const card of this.cards) {
-            utilFunctions.documents[utilFunctions.players.indexOf(this)].playerCardsEl.textContent += `(${card.name})`
+            utilFunctions.documents[utilFunctions.players.indexOf(this)].playerCardsEl.innerHTML += `<img src="${card.image}" style="width:60px; height:90px"> `
         }
         utilFunctions.documents[utilFunctions.players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
         if (this.sum === 21) {
@@ -77,6 +76,8 @@ stayBtn.addEventListener("click", function () {
 splitBtn.addEventListener("click", function() {
     cardsDeck()
 })
+
+cardsDeck()
 
 function addNewPlayer() {
     if (numberOfPlayers === 5) {

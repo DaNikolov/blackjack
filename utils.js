@@ -51,7 +51,7 @@ export const dealer = {
         for(const card of this.cards) {
             this.sum += card.value;
             this.sumEl.textContent = "Dealer Sum: " + this.sum
-            this.cardsEl.textContent += `(${card.name})`
+            this.cardsEl.innerHTML += `<img src="${card.image}" style="width:60px; height:90px"> `
         }
     }
 }
