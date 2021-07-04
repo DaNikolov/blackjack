@@ -1,16 +1,62 @@
 'use strict'
 let numberOfPlayers = 0;
 let gameInProgress = false;
-let message = ""
 import { getRandomCard } from "./cards.js"
-import * as imports from './utils.js'
+import * as utilFunctions from './utils.js'
+import { cardsDeck } from "./cards1.js";
 
 const addPlayerBtn = document.getElementById("add-player-btn")
 const startGameBtn = document.getElementById("start-game-btn")
 const newCardBtn = document.getElementById("new-card-btn")
 const doubleBtn = document.getElementById("double-btn")
 const stayBtn = document.getElementById("stay-btn")
+const splitBtn = document.getElementById("split-btn")
 
+
+class Player {
+    constructor(name, chips){
+        this.name = name
+        this.chips = chips
+        this.isAlive = true
+        this.bet = 0
+    }
+    get sum(){
+        let cardSum = 0
+        for (const card of this.cards) {
+            cardSum += card.value;
+        }
+        return cardSum
+    }
+    playerCardSum() {
+        utilFunctions.documents[utilFunctions.players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: `
+        for (const card of this.cards) {
+            utilFunctions.documents[utilFunctions.players.indexOf(this)].playerCardsEl.textContent += `(${card.name})`
+        }
+        utilFunctions.documents[utilFunctions.players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
+        if (this.sum === 21) {
+            this.isAlive = false
+            alert(`Player ${this.name} has blackjack and has completed the game`)
+            stay()
+        }
+        else if (this.sum > 21) {
+            this.isAlive = false
+            alert(`Player ${this.name} has exceeded 21 and has completed the game`)
+            stay()
+        }
+    }
+    displayPlayerBet() {
+        utilFunctions.documents[utilFunctions.players.indexOf(this)].playerBetEl.textContent = `${this.name} has placed a bet worth $${this.bet}`
+    }
+    displayPlayerChips() {
+        utilFunctions.documents[utilFunctions.players.indexOf(this)].playerMoneyEl.textContent = `${this.name} has $${this.chips} chips available`
+    }
+    youWin() {
+        alert(`You win, ${this.name}!`)
+        this.chips += 2 * this.bet
+        this.displayPlayerChips()
+        this.isAlive = false;
+    }
+}
 
 addPlayerBtn.addEventListener("click", function () {
     addNewPlayer()
@@ -25,8 +71,11 @@ doubleBtn.addEventListener("click", function () {
     double()
 })
 stayBtn.addEventListener("click", function () {
-    imports.determineCurrentPlayer().isAlive = false
+    utilFunctions.determineCurrentPlayer().isAlive = false
     stay()
+})
+splitBtn.addEventListener("click", function() {
+    cardsDeck()
 })
 
 function addNewPlayer() {
@@ -44,39 +93,9 @@ function addNewPlayer() {
             alert("You must deposit a number. Please try again.")
             playerMoney = parseInt(prompt("How much do you wish to deposit"));
         }
-
-        imports.players.push({
-            name: playerName,
-            chips: playerMoney,
-            isAlive: true,
-            sum: 0,
-            playerCardSum: function () {
-                this.sum = 0;
-                imports.documents[imports.players.indexOf(this)].playerCardsEl.textContent = `Player ${this.name}'s Cards: `
-                for (const card of this.cards) {
-                    this.sum += card.value;
-                    imports.documents[imports.players.indexOf(this)].playerCardsEl.textContent += `(${card.name})`
-                }
-                imports.documents[imports.players.indexOf(this)].playerSumEl.textContent = `Player ${this.name}'s cards have a sum of ${this.sum}`
-                if (this.sum === 21) {
-                    this.isAlive = false
-                    alert(`Player ${this.name} has blackjack and has completed the game`)
-                    stay()
-                }
-                else if (this.sum > 21) {
-                    this.isAlive = false
-                    alert(`Player ${this.name} has exceeded 21 and has completed the game`)
-                    stay()
-                }
-            },
-            displayPlayerBet: function () {
-                imports.documents[imports.players.indexOf(this)].playerBetEl.textContent = `${this.name} has placed a bet worth $${this.bet}`;
-            },
-            displayPlayerChips: function () {
-                imports.documents[imports.players.indexOf(this)].playerMoneyEl.textContent = `${this.name} has $${this.chips} chips available`
-            }
-        })
-        imports.players[numberOfPlayers].displayPlayerChips();
+        let person = new Player(playerName,playerMoney)
+        utilFunctions.players.push(person)
+        utilFunctions.players[numberOfPlayers].displayPlayerChips();
         numberOfPlayers++;
     }
 };
@@ -90,21 +109,21 @@ function startGame() {
     }
     else {
         gameInProgress = true;
-        for (const element of imports.players) {
-            element.bet = parseInt(prompt(`How much does player ${element.name} wish to bet?`))
-            while (element.bet > element.chips || !Number.isInteger(element.bet)) {
-                element.bet = parseInt(prompt(`${element.name} you have $${element.chips} available. Please bet maximum this amount`))
+        for (const player of utilFunctions.players) {
+            player.bet = parseInt(prompt(`How much does player ${player.name} wish to bet?`))
+            while (player.bet > player.chips || !Number.isInteger(player.bet)) {
+                player.bet = parseInt(prompt(`${player.name} you have $${player.chips} available. Please bet maximum this amount`))
             }
-            element.chips -= element.bet
-            element.cards = [getRandomCard(), getRandomCard()]
-            imports.determineAces(element.cards)
-            element.playerCardSum()
-            element.displayPlayerBet()
-            element.displayPlayerChips()
+            player.chips -= player.bet
+            player.cards = [getRandomCard(), getRandomCard()]
+            utilFunctions.determineAces(player.cards)
+            player.playerCardSum()
+            player.displayPlayerBet()
+            player.displayPlayerChips()
         }
-        imports.dealer.cards.push(getRandomCard());
-        imports.dealer.dealerCardSum();
-        let person = imports.determineCurrentPlayer()
+        utilFunctions.dealer.cards.push(getRandomCard());
+        utilFunctions.dealer.dealerCardSum();
+        let person = utilFunctions.determineCurrentPlayer()
         alert(`Player ${person.name} is next`);
     }
 };
@@ -114,10 +133,10 @@ function newCard() {
         alert("Please start a new game!")
     }
     else {
-        for (const player of imports.players) {
+        for (const player of utilFunctions.players) {
             if (player.isAlive) {
                 player.cards.push(getRandomCard());
-                imports.determineAces(player.cards)
+                utilFunctions.determineAces(player.cards)
                 player.playerCardSum()
                 break;
             }
@@ -130,21 +149,21 @@ function stay() {
         alert("Game has finished, please start a new game");
     }
     else {
-        const check = imports.players.filter(player => player.isAlive)
+        const check = utilFunctions.players.filter(player => player.isAlive)
         if (check.length >= 1) {
-            alert(`Player ${imports.determineCurrentPlayer().name} is next`);
+            alert(`Player ${utilFunctions.determineCurrentPlayer().name} is next`);
         }
         else {
-            imports.completeDealerCards()
-            imports.determineWinners()
-            imports.startOver()
+            utilFunctions.completeDealerCards()
+            utilFunctions.determineWinners()
+            utilFunctions.startOver()
             gameInProgress = false
         }
     }
 };
 
 function double() {
-    const player = imports.determineCurrentPlayer()
+    const player = utilFunctions.determineCurrentPlayer()
     if (player.cards.length !== 2) {
         alert("You cannot double when you have more than 2 cards")
     }

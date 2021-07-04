@@ -66,16 +66,16 @@ export function determineCurrentPlayer() {
 }
 
 export function determineAces(arr){
-    let sum = 0
+    let sumCheck = 0
     for(let card of arr){
-        sum += card.value
+        sumCheck += card.value
     }
-    if(arr.some(check => check.value === 11) && sum > 22){
+    if(arr.some(check => check.value === 11) && sumCheck > 22){
         for(let card of arr){
             if(card.value === 11){
                 card.value = 1
                 break;
-            }console.log(card);
+            }
         }
     }
 }
@@ -83,10 +83,10 @@ export function determineAces(arr){
 export function determineWinners() {
     for (let player of players){
         if ((dealer.sum < player.sum && player.sum < 21 ) || (dealer.sum > 21 && player.sum < 21)){
-            youWin(players.indexOf(player));
+            player.youWin();
         }
         else if (player.sum === 21){
-            youWin(players.indexOf(player));
+            player.youWin();
         }
         else if(dealer.sum === player.sum && player.sum < 21){
             alert(`${player.name} has drawn.`)
@@ -99,13 +99,6 @@ export function determineWinners() {
             player.isAlive = false
         }
     }
-}
-
-function youWin(player) {
-    alert(`You win, ${players[player].name}!`)
-    players[player].chips += 2 * players[player].bet
-    players[player].displayPlayerChips()
-    players[player].isAlive = false;
 }
 
 export function startOver(){
@@ -123,7 +116,6 @@ export function startOver(){
         documents[player].playerSplitCardsEl.textContent = "";
         players[player].bet = 0;
         players[player].cards = [];
-        players[player].sum = 0; 
     }
     alert("Game is complete!"); 
 }
