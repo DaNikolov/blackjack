@@ -2,43 +2,20 @@ import{getRandomCard, insertCards} from "./cards.js"
 
 export const players = [];
 
-export const documents = [
-    {playerSumEl: document.getElementById("player1-sum-el"),
-    playerBetEl:  document.getElementById("player1-bet-el"),
-    playerCardsEl: document.getElementById("player1-cards-el"),
-    playerMoneyEl: document.getElementById("player1-money-el"),
-    playerSplitSumEl: document.getElementById("player1-split-sum-el"),
-    playerSplitCardsEl: document.getElementById("player1-split-cards-el")
-    },
-    {playerSumEl: document.getElementById("player2-sum-el"),
-    playerBetEl:  document.getElementById("player2-bet-el"),
-    playerCardsEl: document.getElementById("player2-cards-el"),
-    playerMoneyEl: document.getElementById("player2-money-el"),
-    playerSplitSumEl: document.getElementById("player2-split-sum-el"),
-    playerSplitCardsEl: document.getElementById("player2-split-cards-el")
-    },
-    {playerSumEl: document.getElementById("player3-sum-el"),
-    playerBetEl:  document.getElementById("player3-bet-el"),
-    playerCardsEl: document.getElementById("player3-cards-el"),
-    playerMoneyEl: document.getElementById("player3-money-el"),
-    playerSplitSumEl: document.getElementById("player3-split-sum-el"),
-    playerSplitCardsEl: document.getElementById("player3-split-cards-el")
-    },
-    {playerSumEl: document.getElementById("player4-sum-el"),
-    playerBetEl:  document.getElementById("player4-bet-el"),
-    playerCardsEl: document.getElementById("player4-cards-el"),
-    playerMoneyEl: document.getElementById("player4-money-el"),
-    playerSplitSumEl: document.getElementById("player4-split-sum-el"),
-    playerSplitCardsEl: document.getElementById("player4-split-cards-el")
-    },
-    {playerSumEl: document.getElementById("player5-sum-el"),
-    playerBetEl:  document.getElementById("player5-bet-el"),
-    playerCardsEl: document.getElementById("player5-cards-el"),
-    playerMoneyEl: document.getElementById("player5-money-el"),
-    playerSplitSumEl: document.getElementById("player5-split-sum-el"),
-    playerSplitCardsEl: document.getElementById("player5-split-cards-el")
+export const documents = []
+
+export function createDocuments() {
+    for(let i = 1; i < 6; i++){
+        documents.push({
+            playerSumEl: document.getElementById(`player${i}-sum-el`),
+            playerBetEl:  document.getElementById(`player${i}-bet-el`),
+            playerCardsEl: document.getElementById(`player${i}-cards-el`),
+            playerMoneyEl: document.getElementById(`player${i}-money-el`),
+            playerSplitSumEl: document.getElementById(`player${i}-split-sum-el`),
+            playerSplitCardsEl: document.getElementById(`player${i}-split-cards-el`) 
+        })
     }
-]
+}
 
 export const dealer = {
     cards: [],
@@ -58,10 +35,7 @@ export const dealer = {
 
 export function determineCurrentPlayer() {
     for (const player of players) {
-        if (player.isAlive) {
-            return player
-            break;
-        }
+        if (player.isAlive) return player
     }
 }
 
@@ -70,7 +44,7 @@ export function determineAces(arr){
     for(let card of arr){
         sumCheck += card.value
     }
-    if(arr.some(check => check.value === 11) && sumCheck > 22){
+    if(arr.some(check => check.value === 11) && sumCheck > 21){
         for(let card of arr){
             if(card.value === 11){
                 card.value = 1
@@ -82,22 +56,44 @@ export function determineAces(arr){
 
 export function determineWinners() {
     for (let player of players){
-        if ((dealer.sum < player.sum && player.sum < 21 ) || (dealer.sum > 21 && player.sum < 21)){
+        player.isAlive = false
+        if ((dealer.sum < player.sum  || dealer.sum > 21) && player.sum < 21){
             player.youWin();
         }
-        else if (player.sum === 21){
-            player.youWin();
+        else if (player.sum === 21) {
+            player.youWin()
         }
         else if(dealer.sum === player.sum && player.sum < 21){
             alert(`${player.name} has drawn.`)
             player.chips += player.bet
             player.displayPlayerChips()
-            player.isAlive = false
         }
         else {
             alert(`${player.name} has lost.`)
-            player.isAlive = false
         }
+    }
+}
+
+export function determineSplitWinners() {
+    for (let player of players) {
+        if (player.splitSum > 0) {
+            player.isSplit = false
+            if ((dealer.sum < player.splitSum || dealer.sum > 21) && player.splitSum < 21) {
+                player.youWin();
+            }
+            else if (player.splitSum === 21) {
+                player.youWin()
+            }
+            else if (dealer.sum === player.splitSum && player.splitSum < 21) {
+                alert(`${player.name} has drawn.`)
+                player.chips += player.splitBet
+                player.displayPlayerChips()
+            }
+            else {
+                alert(`${player.name} has lost.`)
+            }
+        }
+
     }
 }
 
@@ -116,6 +112,8 @@ export function startOver(){
         documents[player].playerSplitCardsEl.textContent = "";
         players[player].bet = 0;
         players[player].cards = [];
+        players[player].splitBet = 0;
+        players[player].splitCards = []
     }
     alert("Game is complete!"); 
 }
