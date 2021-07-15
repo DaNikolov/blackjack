@@ -1,0 +1,80 @@
+
+<html>
+    <head>
+        <link rel="stylesheet" href="index.css">
+        <script src="./axios.min.js"></script>
+    </head>
+    <body>
+        <nav class=" mb2">
+            <ul>
+                <li><a href=" /register.html">Register</a></li>
+                <li><a href=" /login.html">Login</a></li>
+                <li class="active"><a href="/userDetails.html">User Details</a></li>
+                <li><a href=" /index.html">Play</a></li>
+                <li><a href=" /history.html">History</a></li>
+            </ul>
+        </nav>
+        <h1>Blackjack</h1>
+        <script type="module" src="./userDetails.js"></script> 
+        <div id="select-user">
+            <lable>Select User</lable>
+                <select id="user">
+                    <option value=""></option>
+                </select>
+        </div>
+        <div class="pl4">
+            <form class="w-25" autocomplete="off">
+                <div class="flex flex-column pt2">
+                    <label>First Name</label>
+                    <input name="firstName" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>Last Name</label>
+                    <input name="lastName" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>Username</label>
+                    <input name="username" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>E-Mail Address</label>
+                    <input name="emailAddress" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>Street</label>
+                    <input name="street" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>City</label>
+                    <input name="city" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>Postal Code</label>
+                    <input name="postalCode" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>Country</label>
+                    <input name="country" type="text" required />
+                    <div class="error"></div>
+                </div>
+                <div class="flex flex-column pt2">
+                    <label>Password</label>
+                    <input name="password" type="password" required />
+                    <div class="error"></div>
+                </div>
+                <button id="update-btn" class="fr mt2">update</button>
+                <button id="logout-btn" class="fr mt2">logout</button>
+                <p id="deposit-el"></p>
+                <button id="deposit-btn" class="fr mt2">deposit</button>
+                <button id="withdraw-btn" class="fr mt2">withdraw</button>
+            </form>
+        </div>  
+    </body>
+</html>

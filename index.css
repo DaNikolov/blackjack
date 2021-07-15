@@ -12,12 +12,56 @@ h1{
     color: goldenrod;
 }
 
+nav {
+    width: 100%;
+    float: left;
+    color: white;
+  }
+
+  nav > ul {
+    list-style: none;
+    margin: 0;
+  }
+  nav > ul > li {
+    padding: 20px 10px;
+    float: left;
+  }
+  
+  nav > ul > li.active {
+    color: goldenrod;
+  }
+  
+  nav > ul > li > a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  div{
+      color: goldenrod;
+      padding: 5px 5px;
+  }
+
+.flex {         
+        text-align:end;
+        background-position: center;
+        padding-right: 590px;
+}
+
+
 
 #message-el {
     font-style: italic;
 
 }
-
+lable{
+  color: goldenrod;
+}
+#select-user{
+  padding-right: 100px;
+}
+#user{
+  width: 150px;
+}
 button {
     color: #016f32;
     width: 150px;
@@ -29,4 +73,9 @@ button {
     border-radius: 2px;
     margin-bottom: 2px;
     margin-top: 2px;
+}
+
+table, th, td {
+  border: 1px solid black;
+  background-color: goldenrod;
 }

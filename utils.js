@@ -1,6 +1,10 @@
+
 import{getRandomCard, insertCards} from "./cards.js"
 
+export const users = []
 export const players = [];
+let hand 
+
 
 export const documents = []
 //creating the array for displaying the information
@@ -63,6 +67,7 @@ export function determineWinners(player, sum) {
     }
     else if (dealer.sum === sum && sum < 21) {
         alert(`${player.name} has drawn.`)
+        player.outcome = 'draw'
         player.chips += player.bet
         player.displayPlayerChips()
     }
@@ -73,23 +78,8 @@ export function determineWinners(player, sum) {
 }
 // setup everything in order to start again
 export function startOver(){
-    for(const card of dealer.cards){
-        insertCards(card)
-    }
-    dealer.dealerCardSum()
-    dealer.cards = [] 
-    for (const player in players){
-        for (const card of players[player].cards){
-            insertCards(card)
-        }
-        documents[player].playerBetEl.textContent = "";
-        documents[player].playerSplitSumEl.textContent = "";
-        documents[player].playerSplitCardsEl.textContent = "";
-        players[player].bet = 0;
-        players[player].cards = [];
-        players[player].splitBet = 0;
-        players[player].splitCards = []
-    }
+    axios.post('http://localhost:8080/api/hands')
+    axios.get('http://localhost:8080/api/hands').then(getHandID).then(saveResetGame)
     alert("Game is complete!"); 
 }
 
@@ -104,16 +94,71 @@ export function completeDealerCards() {
 export function checkBlackjack(sum, name){
     let aliveOrSplit = true
     if (sum === 21) {
-        console.log(aliveOrSplit)
         aliveOrSplit = false
-        console.log(aliveOrSplit)
         alert(`Player ${name} has blackjack and has completed the game`)
     }
     else if (sum > 21) {
-        console.log(aliveOrSplit)
         aliveOrSplit = false
-        console.log(aliveOrSplit)
         alert(`Player ${name} has exceeded 21 and has completed the game`)
     }
     return aliveOrSplit
+}
+
+function getHandID( {data} ){
+    hand = data[0].HandID
+}
+
+function saveResetGame() {
+    for(const card of dealer.cards){
+        insertCards(card)
+        console.log(hand)
+        axios.post('http://localhost:8080/api/dealercards', {
+            handID: hand,
+            card: card.name
+        })
+    }
+    dealer.dealerCardSum()
+    dealer.cards = [] 
+    for (const player in players){
+        for (const user of users) {
+            if (user.username === players[player].name){
+                user.balance = players[player].chips
+                axios.put('http://localhost:8080/api/updateuser', user)
+                axios.post('http://localhost:8080/api/playerbet', {
+                    handID: hand,
+                    playerID: user.playerID,
+                    betAmount: players[player].bet,
+                    outcome: players[player].outcome,
+                    totalAmountAvailableAtHandFinish: players[player].chips
+                })
+                for (const card of players[player].cards){
+                    insertCards(card)
+                    axios.post('http://localhost:8080/api/playercards', {
+                        handID: hand,
+                        playerID: user.playerID,
+                        card: card.name
+                    })
+                }
+                if (players[player].splitCards){
+                    for (const card of players[player].splitCards){
+                        insertCards(card)
+                        axios.post('http://localhost:8080/api/playercards', {
+                            handID: hand,
+                            playerID: user.playerID,
+                            card: card.name,
+                            isSplit: 1
+                        })
+                    }
+                }
+            }
+        }
+        documents[player].playerBetEl.textContent = "";
+        documents[player].playerSplitSumEl.textContent = "";
+        documents[player].playerSplitCardsEl.textContent = "";
+        players[player].bet = 0;
+        players[player].cards = [];
+        players[player].splitBet = 0;
+        players[player].splitCards = []
+        players[player].outcome = 'loss'
+    }
 }

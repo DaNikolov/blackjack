@@ -3,12 +3,15 @@ let gameInProgress = false;
 import { getRandomCard, cardsDeck } from "./cards.js"
 import * as utilFunctions from './utils.js'
 
-const addPlayerBtn = document.getElementById("add-player-btn")
+
+const selectPlayerBtn = document.getElementById("select-player-btn")
 const startGameBtn = document.getElementById("start-game-btn")
 const newCardBtn = document.getElementById("new-card-btn")
 const doubleBtn = document.getElementById("double-btn")
 const stayBtn = document.getElementById("stay-btn")
 const splitBtn = document.getElementById("split-btn")
+const selectPlayer = document.getElementById("select-player")
+const playersMoney = document.getElementById("players-money")
 
 // using a class in order to create the player objects
 class Player {
@@ -19,6 +22,7 @@ class Player {
         this.bet = 0
         this.isSplit = false
         this.splitCards = []
+        this.outcome = 'loss'
     }
     // sum will be determined based on value of the cards
     get sum() {
@@ -65,14 +69,19 @@ class Player {
         alert(`You win, ${this.name}!`)
         this.chips += 2 * this.bet
         this.displayPlayerChips()
+        this.outcome = 'win'
     }
 }
 //generating the cards and the array for displaying the data
 utilFunctions.createDocuments()
 cardsDeck()
 //calling the buttons
-addPlayerBtn.addEventListener("click", function () {
-    addNewPlayer()
+selectPlayerBtn.addEventListener("click", function () {
+    utilFunctions.players.splice(0, utilFunctions.players.length)
+    for (let i = 0; i < 5; i++) {
+        utilFunctions.documents[i].playerMoneyEl.textContent = ""
+    }
+    selectPlayers()
 })
 startGameBtn.addEventListener("click", function () {
     startGame()
@@ -98,25 +107,28 @@ splitBtn.addEventListener("click", function () {
     split()
 })
 
+axios.get('http://localhost:8080/api/userdetails').then(addPlayers)
 
-function addNewPlayer() {
-    if (utilFunctions.players.length === 5) return alert("Maximum number of players has been reached")
-    //requesting the player provide their name and the amount of chips they wish to deposit
-    let playerName = prompt("What is your name?")
-    while (!playerName) {
-        alert("Name cannot be empty. Please try again.")
-        playerName = prompt("What is your name?")
+function addPlayers( {data} ) {
+    for (const user of data) {
+        utilFunctions.users.push(user)
+        selectPlayer.innerHTML += `<input type="checkbox" id="${user.username}">
+                                    <label for="${user.username}">${user.username}</label>`
     }
-    let playerMoney = parseInt(prompt("How much do you wish to deposit"));
-    while (!Number.isInteger(playerMoney)) {
-        alert("You must deposit a number. Please try again.")
-        playerMoney = parseInt(prompt("How much do you wish to deposit"));
+}
+
+function selectPlayers() {
+    for (const user of utilFunctions.users) {
+        const checkSelected = document.getElementById(user.username)
+        if(checkSelected.checked) {
+            let person = new Player(user.username, user.balance)
+            utilFunctions.players.push(person)
+            if (utilFunctions.players.length === 5) return alert('Maximum 5 players allowed')
+            person.displayPlayerChips();
+        }
     }
-    // creating the player object based on the information provided
-    let person = new Player(playerName, playerMoney)
-    utilFunctions.players.push(person)
-    person.displayPlayerChips();
-};
+}
+
 
 function startGame() {
     if (utilFunctions.players.length === 0) return alert("Please add players to the game")
@@ -162,7 +174,7 @@ function newCard() {
             utilFunctions.determineAces(player.splitCards)
             player.playerSplitCardSum()
             player.isSplit = utilFunctions.checkBlackjack(player.splitSum, player.name)
-            if (!playerisSplit) stay()
+            if (!player.isSplit) stay()
             break
         }
         else if (player.isAlive) {

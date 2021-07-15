@@ -15,7 +15,7 @@ const cards = [
 ]
 const suits = ["C", "D", "H", "S"]
 
-const deck = []
+export const deck = []
 
 export function cardsDeck(){
     for(let card of cards){

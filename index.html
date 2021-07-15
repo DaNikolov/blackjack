@@ -2,9 +2,20 @@
 <html>
     <head>
         <link rel="stylesheet" href="index.css">
+        <script src="./axios.min.js"></script>
     </head>
     <body>
+        <nav class=" mb2">
+            <ul>
+                <li><a href=" /register.html">Register</a></li>
+                <li><a href=" /login.html">Login</a></li>
+                <li><a href="/userDetails.html">User Details</a></li>
+                <li class="active"><a href=" /index.html">Play</a></li>
+                <li><a href=" /history.html">History</a></li>
+            </ul>
+        </nav>
         <h1>Blackjack</h1>
+        <script type="module" src="index.js"></script> 
         <p id="message-el">Want to play a round?</p>
         <p id="player1-cards-el"></p>
         <p id="player1-split-cards-el"></p>
@@ -28,22 +39,25 @@
         <p id="player5-split-sum-el"></p>
         <p id="dealer-cards-el">Dealer Cards: </p>
         <p id="dealer-sum-el">Dealer Sum: </p>
-        <button id="add-player-btn">ADD NEW PLAYER</button>
+        <button id="select-player-btn">SELECT PLAYERS</button>
+            <div id="select-player">
+            </div>
         <button id="start-game-btn">START GAME</button>
         <button id="new-card-btn">NEW CARD</button>
         <button id="double-btn">DOUBLE</button>
         <button id="split-btn">SPLIT</button>
         <button id="stay-btn">STAY</button>
-        <p id="player1-money-el"></p>
-        <p id="player1-bet-el"></p>
-        <p id="player2-money-el"></p>
-        <p id="player2-bet-el"></p>
-        <p id="player3-money-el"></p>
-        <p id="player3-bet-el"></p>
-        <p id="player4-money-el"></p>
-        <p id="player4-bet-el"></p>
-        <p id="player5-money-el"></p>
-        <p id="player5-bet-el"></p>
-        <script type="module" src="index.js"></script>   
+        <div id="players-money">
+            <p id="player1-money-el"></p>
+            <p id="player1-bet-el"></p>
+            <p id="player2-money-el"></p>
+            <p id="player2-bet-el"></p>
+            <p id="player3-money-el"></p>
+            <p id="player3-bet-el"></p>
+            <p id="player4-money-el"></p>
+            <p id="player4-bet-el"></p>
+            <p id="player5-money-el"></p>
+            <p id="player5-bet-el"></p> 
+        </div>
     </body>
 </html>
